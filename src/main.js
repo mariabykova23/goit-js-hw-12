@@ -32,14 +32,32 @@ async function onSubmit(e) {
   e.preventDefault();
   userKeyWord = refs.userKeyWordInput.value.trim();
   page = 1;
-  refs.loadDiv.classList.add('loader');
-  
-  const data = await imgPix(userKeyWord, page);
-  if (data.totalHits > 0) {
-    const img = data.hits;
-    refs.containerForImages.innerHTML = '';
-    renderImages(img);
-  } else {
+  refs.loadDiv.classList.remove('hidden');
+  try {
+    const data = await imgPix(userKeyWord, page);
+    if (data.totalHits > 0) {
+      const img = data.hits;
+      maxPages = Math.ceil(data.totalHits / 20);
+      refs.containerForImages.innerHTML = '';
+      renderImages(img);
+    } else {
+      iziToast.show({
+        position: 'topRight',
+        iconUrl: icon,
+        message:
+          'Sorry, there are no images matching your search query. Please try again!',
+        messageColor: '#FFFFFF',
+        messageSize: '16',
+        messageLineHeight: '15',
+        backgroundColor: '#EF4040',
+        timeout: 5000,
+        displayMode: 2,
+        close: true,
+        closeOnEscape: true,
+        closeOnClick: true,
+      });
+    }
+  } catch (error) {
     iziToast.show({
       position: 'topRight',
       iconUrl: icon,
@@ -56,18 +74,19 @@ async function onSubmit(e) {
       closeOnClick: true,
     });
   }
+  refs.loadDiv.classList.add('hidden');
   lightBoxShow();
   checkLoadBtnVisibility();
-  refs.loadDiv.classList.remove('loader');
   e.target.reset();
 }
 
 async function loadMore() {
   page += 1;
+  refs.loadDiv.classList.remove('hidden');
   const data = await imgPix(userKeyWord, page);
-  maxPages = Math.ceil(data.totalHits / 20);
-  checkLoadBtnVisibility();
   renderImages(data.hits);
+  refs.loadDiv.classList.add('hidden');
+  checkLoadBtnVisibility();
   lightBoxShow();
 }
 

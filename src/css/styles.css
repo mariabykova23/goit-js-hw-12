@@ -116,13 +116,10 @@ td {
   padding: 10px;
 }
 
-.hidden-load {
-  display: none;
-  text-align: center;
-}
-
 .loader {
   font-size: 48px;
+  margin-top: 20px;
+  margin-bottom: 20px;
   display: inline-block;
   font-family: Arial, Helvetica, sans-serif;
   font-weight: bold;
@@ -201,10 +198,10 @@ td {
   background-color: #6c8cff;
 }
 
-div.sl-counter>span{
-  color:transparent;
+div.sl-counter > span {
+  color: transparent;
 }
 
-.sl-counter{
+.sl-counter {
   display: none !important;
 }
