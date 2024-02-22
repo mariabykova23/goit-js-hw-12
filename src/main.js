@@ -12,104 +12,63 @@ import icon from './img/x-icon.svg';
 
 import { renderImages } from './js/render-functions';
 
-const searchForm = document.querySelector('.form');
-const containerForImages = document.querySelector('.container-imgs');
-const loadDiv = document.querySelector('.hidden-load');
-const loadMorePictures = document.querySelector('.load-morepics');
-const userKeyWordInput = document.querySelector('.data-userInput');
+const refs = {
+  searchForm: document.querySelector('.form'),
+  loadDiv: document.querySelector('.hidden-load'),
+  loadMorePictures: document.querySelector('.load-morepics'),
+  userKeyWordInput: document.querySelector('.data-userInput'),
+  containerForImages: document.querySelector('.container-imgs'),
+};
 
-const imgSearch = new imgPix();
-
-let page = 1;
+let page;
 let maxPages;
+let userKeyWord;
 
-searchForm.addEventListener('submit', ev => {
-  ev.preventDefault();
-  clearGallery();
-  const userKeyWord = userKeyWordInput.value.trim();
-  page = 1;
-  onSubmit(userKeyWord);
-});
+refs.searchForm.addEventListener('submit', onSubmit);
 
-loadMorePictures.addEventListener('click', e => {
+refs.loadMorePictures.addEventListener('click', loadMore);
+
+async function onSubmit(e) {
   e.preventDefault();
-  const userKeyWord = userKeyWordInput.value.trim();
-  loadMore(userKeyWord);
-  noMorePages();
-});
-
-function loadMore(userKeyWord) {
-  let newPage = page + 1;
-
-  imgSearch
-    .getImage(userKeyWord, newPage)
-    .then(data => {
-      let maxPages = Math.ceil(data.totalHits / 20);
-      if (newPage <= maxPages) {
-        loadMorePictures.classList.add('load-morepics-on');
-        renderImages(data.hits);
-        lightBoxShow();
-        return;
-      } else {
-        loadMorePictures.classList.remove('load-morepics-on');
-        noMorePages(newPage, maxPages);
-      }
-    })
-    .catch(error => {
-      console.error('Error loading images:', error);
+  userKeyWord = refs.userKeyWordInput.value.trim();
+  page = 1;
+  refs.loadDiv.classList.add('loader');
+  
+  const data = await imgPix(userKeyWord, page);
+  if (data.totalHits > 0) {
+    const img = data.hits;
+    refs.containerForImages.innerHTML = '';
+    renderImages(img);
+  } else {
+    iziToast.show({
+      position: 'topRight',
+      iconUrl: icon,
+      message:
+        'Sorry, there are no images matching your search query. Please try again!',
+      messageColor: '#FFFFFF',
+      messageSize: '16',
+      messageLineHeight: '15',
+      backgroundColor: '#EF4040',
+      timeout: 5000,
+      displayMode: 2,
+      close: true,
+      closeOnEscape: true,
+      closeOnClick: true,
     });
-  page++;
+  }
+  lightBoxShow();
+  checkLoadBtnVisibility();
+  refs.loadDiv.classList.remove('loader');
+  e.target.reset();
 }
 
-function onSubmit(userKeyWord) {
-  loadDiv.classList.add('loader');
-
-  imgSearch
-    .getImage(userKeyWord, page)
-    .then(data => {
-      if (data.totalHits > 0) {
-        const img = data.hits;
-        renderImages(img);
-        lightBoxShow();
-        loadMorePictures.classList.add('load-morepics-on');
-      } else {
-        iziToast.show({
-          position: 'topRight',
-          iconUrl: icon,
-          message:
-            'Sorry, there are no images matching your search query. Please try again!',
-          messageColor: '#FFFFFF',
-          messageSize: '16',
-          messageLineHeight: '15',
-          backgroundColor: '#EF4040',
-          timeout: 5000,
-          displayMode: 2,
-          close: true,
-          closeOnEscape: true,
-          closeOnClick: true,
-        });
-      }
-    })
-    .catch(err => {
-      iziToast.error({
-        position: 'topRight',
-        iconUrl: icon,
-        message:
-          'Sorry, there are no images matching your search query. Please try again!',
-        messageColor: '#FFFFFF',
-        messageSize: '16',
-        messageLineHeight: '15',
-        backgroundColor: '#EF4040',
-        timeout: 5000,
-        displayMode: 2,
-        close: true,
-        closeOnEscape: true,
-        closeOnClick: true,
-      });
-    })
-    .finally(() => {
-      loadDiv.classList.remove('loader');
-    });
+async function loadMore() {
+  page += 1;
+  const data = await imgPix(userKeyWord, page);
+  maxPages = Math.ceil(data.totalHits / 20);
+  checkLoadBtnVisibility();
+  renderImages(data.hits);
+  lightBoxShow();
 }
 
 function lightBoxShow() {
@@ -127,25 +86,18 @@ function lightBoxShow() {
   lightbox.refresh();
 }
 
-function noMorePages(newPage, maxPages) {
-  if (newPage > maxPages) {
-    iziToast.show({
-      position: 'topRight',
-      message: 'Sorry, there are no images to load!',
-      messageColor: 'black',
-      messageSize: '16',
-      messageLineHeight: '15',
-      backgroundColor: 'yellow',
-      timeout: 5000,
-      displayMode: 2,
-      close: true,
-      closeOnEscape: true,
-      closeOnClick: true,
-    });
-  }
+function showLoadBtn() {
+  refs.loadMorePictures.classList.remove('hidden');
 }
 
-function clearGallery() {
-  containerForImages.innerHTML = '';
-  loadMorePictures.classList.remove('load-morepics-on');
+function removeLoadBtn() {
+  refs.loadMorePictures.classList.add('hidden');
+}
+
+function checkLoadBtnVisibility() {
+  if (page >= maxPages) {
+    removeLoadBtn();
+  } else {
+    showLoadBtn();
+  }
 }
