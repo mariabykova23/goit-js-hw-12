@@ -14,7 +14,7 @@ import { renderImages } from './js/render-functions';
 
 const refs = {
   searchForm: document.querySelector('.form'),
-  loadDiv: document.querySelector('.hidden-load'),
+  loadDiv: document.querySelector('.loader'),
   loadMorePictures: document.querySelector('.load-morepics'),
   userKeyWordInput: document.querySelector('.data-userInput'),
   containerForImages: document.querySelector('.container-imgs'),
@@ -32,60 +32,46 @@ async function onSubmit(e) {
   e.preventDefault();
   userKeyWord = refs.userKeyWordInput.value.trim();
   page = 1;
-  refs.loadDiv.classList.remove('hidden');
+  showLoader();
+  if (!userKeyWord) {
+    maxPages=0;
+    checkLoadBtnVisibility();
+    refs.containerForImages.innerHTML = '';
+    showError('Empty field!', 'green', 'black');
+    return;
+  }
   try {
     const data = await imgPix(userKeyWord, page);
-    if (data.totalHits > 0) {
-      const img = data.hits;
-      maxPages = Math.ceil(data.totalHits / 20);
-      refs.containerForImages.innerHTML = '';
-      renderImages(img);
-    } else {
-      iziToast.show({
-        position: 'topRight',
-        iconUrl: icon,
-        message:
-          'Sorry, there are no images matching your search query. Please try again!',
-        messageColor: '#FFFFFF',
-        messageSize: '16',
-        messageLineHeight: '15',
-        backgroundColor: '#EF4040',
-        timeout: 5000,
-        displayMode: 2,
-        close: true,
-        closeOnEscape: true,
-        closeOnClick: true,
-      });
-    }
-  } catch (error) {
-    iziToast.show({
-      position: 'topRight',
-      iconUrl: icon,
-      message:
+    if (data.totalHits === 0) {
+      showError(
         'Sorry, there are no images matching your search query. Please try again!',
-      messageColor: '#FFFFFF',
-      messageSize: '16',
-      messageLineHeight: '15',
-      backgroundColor: '#EF4040',
-      timeout: 5000,
-      displayMode: 2,
-      close: true,
-      closeOnEscape: true,
-      closeOnClick: true,
-    });
+        'red',
+        'white'
+      );
+    }
+    const img = data.hits;
+    maxPages = Math.ceil(data.totalHits / 20);
+    refs.containerForImages.innerHTML = '';
+    renderImages(img);
+  } catch (error) {
+    showError(error);
+    maxPages = 0;
+    refs.containerForImages.innerHTML = '';
+  } finally {
+    checkLoadBtnVisibility();
   }
-  refs.loadDiv.classList.add('hidden');
+
+  hideLoader();
   lightBoxShow();
-  checkLoadBtnVisibility();
   e.target.reset();
 }
 
 async function loadMore() {
   page += 1;
-  refs.loadDiv.classList.remove('hidden');
+  showLoader();
   const data = await imgPix(userKeyWord, page);
   renderImages(data.hits);
-  refs.loadDiv.classList.add('hidden');
+  hideLoader();
   checkLoadBtnVisibility();
   lightBoxShow();
 }
@@ -119,4 +105,29 @@ function checkLoadBtnVisibility() {
   } else {
     showLoadBtn();
   }
+}
+
+function showLoader() {
+  refs.loadDiv.classList.remove('hidden');
+}
+
+function hideLoader() {
+  refs.loadDiv.classList.add('hidden');
+}
+
+function showError(text, bgColor, txtColor) {
+  iziToast.error({
+    position: 'topRight',
+    iconUrl: icon,
+    message: text,
+    messageColor: txtColor,
+    messageSize: '16',
+    messageLineHeight: '15',
+    backgroundColor: bgColor,
+    timeout: 5000,
+    displayMode: 2,
+    close: true,
+    closeOnEscape: true,
+    closeOnClick: true,
+  });
 }
