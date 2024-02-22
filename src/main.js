@@ -34,10 +34,11 @@ async function onSubmit(e) {
   page = 1;
   showLoader();
   if (!userKeyWord) {
-    maxPages=0;
+    maxPages = 0;
     checkLoadBtnVisibility();
+    hideLoader();
     refs.containerForImages.innerHTML = '';
-    showError('Empty field!', 'green', 'black');
+    showError('Empty field!', 'green', 'black',false);
     return;
   }
   try {
@@ -46,7 +47,8 @@ async function onSubmit(e) {
       showError(
         'Sorry, there are no images matching your search query. Please try again!',
         'red',
-        'white'
+        'white',
+        icon
       );
     }
     const img = data.hits;
@@ -74,6 +76,18 @@ async function loadMore() {
   hideLoader();
   checkLoadBtnVisibility();
   lightBoxShow();
+
+  if(page===maxPages){
+    showError('We are sorry, but you have reached the end of search results.', 'lightblue', 'white',false);
+  }
+
+  const height =
+    refs.containerForImages.firstElementChild.getBoundingClientRect().height;
+
+  scrollBy({
+    behavior: 'smooth',
+    top: height*3,
+  });
 }
 
 function lightBoxShow() {
@@ -115,10 +129,10 @@ function hideLoader() {
   refs.loadDiv.classList.add('hidden');
 }
 
-function showError(text, bgColor, txtColor) {
+function showError(text, bgColor, txtColor,iconX) {
   iziToast.error({
     position: 'topRight',
-    iconUrl: icon,
+    iconUrl: iconX,
     message: text,
     messageColor: txtColor,
     messageSize: '16',
