@@ -38,7 +38,7 @@ async function onSubmit(e) {
     checkLoadBtnVisibility();
     hideLoader();
     refs.containerForImages.innerHTML = '';
-    showError('Empty field!', 'green', 'black',false);
+    showError('Empty field!', 'green', 'black', false);
     return;
   }
   try {
@@ -77,8 +77,13 @@ async function loadMore() {
   checkLoadBtnVisibility();
   lightBoxShow();
 
-  if(page===maxPages){
-    showError('We are sorry, but you have reached the end of search results.', 'lightblue', 'white',false);
+  if (page === maxPages) {
+    showError(
+      'We are sorry, but you have reached the end of search results.',
+      'lightblue',
+      'white',
+      false
+    );
   }
 
   const height =
@@ -86,7 +91,7 @@ async function loadMore() {
 
   scrollBy({
     behavior: 'smooth',
-    top: height*3,
+    top: height * 3,
   });
 }
 
@@ -129,7 +134,7 @@ function hideLoader() {
   refs.loadDiv.classList.add('hidden');
 }
 
-function showError(text, bgColor, txtColor,iconX) {
+function showError(text, bgColor, txtColor, iconX) {
   iziToast.error({
     position: 'topRight',
     iconUrl: iconX,
