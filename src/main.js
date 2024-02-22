@@ -8,7 +8,7 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 
 import { imgPix } from './js/pixabay-api';
 
-// import icon from './img/x-icon.svg';
+import icon from './img/x-icon.svg';
 
 import { renderImages } from './js/render-functions';
 
