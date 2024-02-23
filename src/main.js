@@ -67,7 +67,7 @@ async function onSubmit(e) {
     renderImages(img);
     lightbox.refresh();
   } catch (error) {
-    showError(error);
+    showError('Error occured! Please, try again! ', 'red', 'white', icon);
     maxPages = 0;
     refs.containerForImages.innerHTML = '';
   } finally {
