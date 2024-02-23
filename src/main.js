@@ -20,6 +20,16 @@ const refs = {
   containerForImages: document.querySelector('.container-imgs'),
 };
 
+const lightbox = new SimpleLightbox('.container-img-wrap a', {
+  close: true,
+  captionsData: 'alt',
+  captionDelay: 50,
+  captionsPosition: 'bottom',
+  animationSpeed: 1,
+  captionSelector: 'img',
+  loop: true,
+});
+
 let page;
 let maxPages;
 let userKeyWord;
@@ -55,6 +65,7 @@ async function onSubmit(e) {
     maxPages = Math.ceil(data.totalHits / 20);
     refs.containerForImages.innerHTML = '';
     renderImages(img);
+    lightbox.refresh();
   } catch (error) {
     showError(error);
     maxPages = 0;
@@ -64,7 +75,6 @@ async function onSubmit(e) {
   }
 
   hideLoader();
-  lightBoxShow();
   e.target.reset();
 }
 
@@ -73,10 +83,9 @@ async function loadMore() {
   showLoader();
   const data = await imgPix(userKeyWord, page);
   renderImages(data.hits);
+  lightbox.refresh();
   hideLoader();
   checkLoadBtnVisibility();
-  lightBoxShow();
-
   if (page === maxPages) {
     showError(
       'We are sorry, but you have reached the end of search results.',
@@ -93,21 +102,6 @@ async function loadMore() {
     behavior: 'smooth',
     top: height * 3,
   });
-}
-
-function lightBoxShow() {
-  const lightbox = new SimpleLightbox('.container-img-wrap a', {
-    close: true,
-    captionsData: 'alt',
-    captionDelay: 50,
-    captionsPosition: 'bottom',
-    animationSpeed: 1,
-    captionSelector: 'img',
-    loop: true,
-  });
-
-  lightbox.on('show.simplelightbox');
-  lightbox.refresh();
 }
 
 function showLoadBtn() {
